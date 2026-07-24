@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon 图片合规标记工具</title>
+<style>
+:root{--bg:#f5f5f5;--card:#fff;--text:#333;--t2:#666;--bd:#e0e0e0;--p:#FF9900;--ph:#e68a00;--pl:#fff3e0;--ok:#4CAF50;--obg:#e8f5e9;--er:#f44336;--ebg:#ffebee;--r:12px;--sh:0 2px 12px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.h{background:#232F3E;color:#fff;padding:14px 0;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.hi{max-width:960px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:12px}
+.hl{font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}
+.hb{background:var(--p);color:#111;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-left:auto}
+.c{max-width:960px;margin:0 auto;padding:28px 24px}
+.ic{background:var(--pl);border:1px solid #ffe0b2;border-radius:var(--r);padding:16px 24px;margin-bottom:24px;font-size:14px;line-height:1.7}
+.ic h3{font-size:15px;margin-bottom:8px;color:#e65100}
+.ic code{background:#e65100;color:#fff;padding:2px 8px;border-radius:4px;font-size:13px}
+.uz{background:var(--card);border:2px dashed var(--bd);border-radius:var(--r);padding:40px 24px;text-align:center;cursor:pointer;transition:all .3s;margin-bottom:24px}
+.uz:hover,.uz.dr{border-color:var(--p);background:var(--pl)}
+.uz .ico{font-size:48px;margin-bottom:10px;display:block}
+.uz h3{font-size:17px;margin-bottom:4px}
+.uz p{color:var(--t2);font-size:13px}
+.uz input{display:none}
+.uh{margin-top:10px;font-size:12px;color:var(--t2)}
+.fl{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:24px;display:none}
+.fl.a{display:block}
+.flh{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--bd)}
+.flh h4{font-size:14px}
+.ba{display:flex;gap:8px}
+.fi{display:flex;align-items:center;padding:10px 20px;border-bottom:1px solid #f0f0f0;gap:12px;transition:background .2s}
+.fi:last-child{border-bottom:none}
+.fi:hover{background:#fafafa}
+.ft{width:44px;height:44px;border-radius:6px;object-fit:cover;background:#f0f0f0;flex-shrink:0}
+.fv{display:flex;align-items:center;justify-content:center;background:#232F3E;color:#fff;font-size:18px}
+.fif{flex:1;min-width:0}
+.fn{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm{font-size:11px;color:var(--t2);margin-top:2px}
+.fs{font-size:11px;font-weight:600;padding:3px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.fs.w{background:#f5f5f5;color:#999}
+.fs.s{background:var(--obg);color:#2e7d32}
+.fs.e{background:var(--ebg);color:#c62828}
+.fs.a{background:#e3f2fd;color:#1565c0}
+.fs.p{background:var(--pl);color:#e65100}
+.fa{display:flex;gap:6px;flex-shrink:0}
+.fa button{background:none;border:1px solid var(--bd);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;transition:all .2s}
+.fa button:hover{background:var(--pl);border-color:var(--p)}
+.bdl{background:var(--p)!important;color:#fff!important;border-color:var(--p)!important}
+.bdl:hover{background:var(--ph)!important}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.bp{background:var(--p);color:#111}
+.bp:hover{background:var(--ph)}
+.bp:disabled{background:#ccc;cursor:not-allowed}
+.bg{background:none;border:1px solid var(--bd);color:var(--text)}
+.pb{height:4px;background:#e0e0e0;border-radius:2px;margin-top:10px;overflow:hidden;display:none}
+.pf{height:100%;background:var(--p);border-radius:2px;transition:width .3s;width:0%}
+.to{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:1000;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.to.s{opacity:1}
+.to.ok{background:var(--obg);color:#2e7d32}
+.to.er{background:var(--ebg);color:#c62828}
+.to.in{background:#e3f2fd;color:#1565c0}
+.ftr{text-align:center;padding:20px;color:var(--t2);font-size:11px}
+.badge{display:inline-block;background:var(--obg);color:#2e7d32;font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;margin-left:4px}
+.badge2{display:inline-block;background:#e3f2fd;color:#1565c0;font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="h"><div class="hi">
+  <div class="hl">📸 Amazon 元数据标记工具</div>
+  <span class="hb">免安装 · 浏览器即用</span>
+</div></div>
+
+<div class="c">
+  <div class="ic">
+    <h3>📋 使用说明</h3>
+    <p>上传图片 → 自动添加 <code>contains-synthetic-performer</code> XMP 元数据 → 下载 JPG → 上传到亚马逊。PNG/WebP 自动转 JPG，尺寸不变。完全在浏览器中处理，文件不上传任何服务器。</p>
+  </div>
+
+  <div class="uz" id="uz">
+    <span class="ico">📁</span>
+    <h3>拖拽图片到此处，或点击选择</h3>
+    <p>JPG / PNG / WebP · 支持批量 · Ctrl+V 粘贴</p>
+    <input type="file" id="fi" multiple accept="image/*">
+  </div>
+
+  <div class="fl" id="fl">
+    <div class="flh">
+      <h4>📦 文件（<span id="fc">0</span>）</h4>
+      <div class="ba">
+        <button class="btn bp" id="bpa" disabled>⚡ 全部标记</button>
+        <button class="btn bp" id="bda" disabled style="display:none">📥 打包下载</button>
+        <button class="btn bg" id="bcl">🗑️ 清空</button>
+      </div>
+    </div>
+    <div id="fis"></div>
+    <div class="pb" id="pbb"><div class="pf" id="pff"></div></div>
+  </div>
+</div>
+
+<div class="ftr">纯浏览器端处理 · 文件不会上传 · 基于 XMP 元数据标准</div>
+<div class="to" id="to"></div>
+
+<script>
+// ── XMP 元数据注入（纯 JS JPEG 二进制操作）──
+const XMP_TAG = "contains-synthetic-performer";
+const XMP_NS_DC = "http://purl.org/dc/elements/1.1/";
+const XMP_NS_RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+
+function buildXMP(keyword) {
+  return `<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+ <rdf:RDF xmlns:rdf="${XMP_NS_RDF}">
+  <rdf:Description rdf:about=""
+   xmlns:dc="${XMP_NS_DC}">
+   <dc:subject>
+    <rdf:Bag>
+     <rdf:li>${keyword}</rdf:li>
+    </rdf:Bag>
+   </dc:subject>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+}
+
+function injectXMP(jpegBytes) {
+  // 编码 XMP XML 为 UTF-8 字节
+  const enc = new TextEncoder();
+  const xmp = buildXMP(XMP_TAG);
+  const xmpBytes = enc.encode(xmp);
+
+  // 构建 APP1 XMP 段
+  // 结构: 0xFF 0xE1 (长度2B) "http://ns.adobe.com/xap/1.0/\0" + XMP数据
+  const header = enc.encode("http://ns.adobe.com/xap/1.0/\0");
+  const segLen = 2 + header.length + xmpBytes.length;
+  const seg = new Uint8Array(2 + segLen);
+  seg[0] = 0xFF; seg[1] = 0xE1;
+  seg[2] = (segLen >> 8) & 0xFF;
+  seg[3] = segLen & 0xFF;
+  seg.set(header, 4);
+  seg.set(xmpBytes, 4 + header.length);
+
+  // 在 JPEG 中找到插入点：在 SOI (FFD8) 之后、第一个非 APP0/JFIF 段之前
+  // 或直接插在 SOI 之后
+  const soi = (jpegBytes[0] === 0xFF && jpegBytes[1] === 0xD8) ? 2 : 0;
+  if (soi === 0) {
+    // 不是标准 JPEG，直接在开头插入
+    const out = new Uint8Array(jpegBytes.length + seg.length);
+    out.set(seg, 0);
+    out.set(jpegBytes, seg.length);
+    return out;
+  }
+
+  // 跳过已有的 APP1 XMP 段，替换或在合适位置插入
+  let pos = soi;
+  let xmpFound = false;
+  while (pos < jpegBytes.length - 1) {
+    if (jpegBytes[pos] !== 0xFF) { pos++; continue; }
+    const marker = jpegBytes[pos + 1];
+    if (marker === 0x00 || marker === 0xFF) { pos++; continue; }
+    if (marker === 0xDA) break; // SOS - 图像数据开始，不要再插
+    // RST markers or DNL
+    if (marker >= 0xD0 && marker <= 0xD7) { pos += 2; continue; }
+
+    if (marker === 0xE1) {
+      // Check if this is XMP APP1
+      const segLen = (jpegBytes[pos + 2] << 8) | jpegBytes[pos + 3];
+      if (pos + 2 + segLen > jpegBytes.length) break;
+      const nsStart = pos + 4;
+      const nsEnd = nsStart + header.length;
+      if (nsEnd <= jpegBytes.length) {
+        const existingNS = new TextDecoder().decode(jpegBytes.slice(nsStart, nsEnd));
+        if (existingNS === "http://ns.adobe.com/xap/1.0/\0") {
+          xmpFound = true;
+          break;
+        }
+      }
+      pos += 2 + segLen;
+    } else if (marker === 0xE0 || marker === 0xE2 || marker === 0xDB || marker === 0xC0 || marker === 0xC2 || marker === 0xC4) {
+      // Standard APP/quantization/Huffman/SOF segments - skip
+      const segLen = (jpegBytes[pos + 2] << 8) | jpegBytes[pos + 3];
+      pos += 2 + segLen;
+    } else {
+      break; // Unknown marker, insert before it
+    }
+  }
+
+  // 插入 XMP 段
+  const before = jpegBytes.slice(0, pos);
+  const after = jpegBytes.slice(pos);
+  const out = new Uint8Array(before.length + seg.length + after.length);
+  out.set(before, 0);
+  out.set(seg, before.length);
+  out.set(after, before.length + seg.length);
+  return out;
+}
+
+function extractXMP(jpegBytes) {
+  // 快速检查 JPEG 是否已包含目标标签
+  const enc = new TextEncoder();
+  const xmpHeader = enc.encode("http://ns.adobe.com/xap/1.0/\0");
+  const tagBytes = enc.encode(XMP_TAG);
+
+  let pos = 2; // skip SOI
+  while (pos < jpegBytes.length - 1) {
+    if (jpegBytes[pos] !== 0xFF) { pos++; continue; }
+    const marker = jpegBytes[pos + 1];
+    if (marker === 0x00 || marker === 0xFF) { pos++; continue; }
+    if (marker === 0xDA) break;
+    if (marker >= 0xD0 && marker <= 0xD7) { pos += 2; continue; }
+    if (marker !== 0xE1) {
+      const segLen = (jpegBytes[pos + 2] << 8) | jpegBytes[pos + 3];
+      pos += 2 + segLen;
+      continue;
+    }
+    const segLen = (jpegBytes[pos + 2] << 8) | jpegBytes[pos + 3];
+    if (pos + 2 + segLen > jpegBytes.length) break;
+    const slice = jpegBytes.slice(pos + 4, pos + 2 + segLen);
+    // 检查是否 XMP 段
+    if (slice.length >= xmpHeader.length) {
+      const hdr = new TextDecoder().decode(slice.slice(0, xmpHeader.length));
+      if (hdr === "http://ns.adobe.com/xap/1.0/\0") {
+        // 检查是否包含目标关键词
+        const xmpData = slice.slice(xmpHeader.length);
+        for (let i = 0; i <= xmpData.length - tagBytes.length; i++) {
+          let match = true;
+          for (let j = 0; j < tagBytes.length; j++) {
+            if (xmpData[i + j] !== tagBytes[j]) { match = false; break; }
+          }
+          if (match) return { found: true, alreadyTagged: true };
+        }
+        return { found: true, alreadyTagged: false };
+      }
+    }
+    pos += 2 + segLen;
+  }
+  return { found: false, alreadyTagged: false };
+}
+
+// ── 图片转换（Canvas 方式，保持尺寸）──
+function convertToJPEG(blob, targetWidth, targetHeight) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(blob);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth || img.naturalWidth;
+      canvas.height = targetHeight || img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      // 白色背景（处理透明通道）
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((b) => {
+        if (b) resolve({ blob: b, w: canvas.width, h: canvas.height });
+        else reject(new Error('JPEG conversion failed'));
+      }, 'image/jpeg', 0.95);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+    img.src = url;
+  });
+}
+
+// ── 主处理流程 ──
+async function processImage(file) {
+  const start = performance.now();
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  // Step 1: 读取文件
+  const buffer = await file.arrayBuffer();
+  let bytes = new Uint8Array(buffer);
+  let width = 0, height = 0;
+  let isJPEG = (ext === 'jpg' || ext === 'jpeg');
+  let alreadyTagged = false;
+
+  // Step 2: 如果不是 JPEG，先转换
+  if (!isJPEG) {
+    const result = await convertToJPEG(file);
+    width = result.w;
+    height = result.h;
+    const buf = await result.blob.arrayBuffer();
+    bytes = new Uint8Array(buf);
+    isJPEG = true;
+  }
+
+  // Step 3: 检查是否已有标签
+  if (isJPEG) {
+    // 获取尺寸（如果还没获取）
+    if (!width) {
+      const dimResult = await getImageDimensions(file);
+      width = dimResult.w;
+      height = dimResult.h;
+    }
+
+    const xmpCheck = extractXMP(bytes);
+    if (xmpCheck.alreadyTagged) {
+      alreadyTagged = true;
+    } else {
+      // Step 4: 注入 XMP
+      bytes = injectXMP(bytes);
+    }
+  }
+
+  // Step 5: 生成 Blob 用于下载
+  const blob = new Blob([bytes], { type: 'image/jpeg' });
+
+  const elapsed = Math.round(performance.now() - start);
+  return {
+    success: true,
+    alreadyTagged,
+    blob,
+    width,
+    height,
+    dimensions: `${width}x${height}`,
+    downloadName: file.name.replace(/\.[^.]+$/, '') + '.jpg',
+    elapsed
+  };
+}
+
+function getImageDimensions(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ w: img.naturalWidth, h: img.naturalHeight });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('dim load fail')); };
+    img.src = url;
+  });
+}
+
+// ── UI ──
+const S={files:[],results:{}};
+const uz=document.getElementById("uz"),fi=document.getElementById("fi");
+const fl=document.getElementById("fl"),fis=document.getElementById("fis");
+const fc=document.getElementById("fc"),bpa=document.getElementById("bpa");
+const bda=document.getElementById("bda"),bcl=document.getElementById("bcl");
+const pbb=document.getElementById("pbb"),pff=document.getElementById("pff");
+const to=document.getElementById("to");
+let tt;
+
+function toast(m,t="in"){to.textContent=m;to.className=`to ${t} s`;clearTimeout(tt);tt=setTimeout(()=>to.className="to",3000)}
+function fs(b){return b<1024?b+" B":b<1048576?(b/1024).toFixed(1)+" KB":(b/1048576).toFixed(1)+" MB"}
+
+function addFiles(arr){
+  for(const f of arr){
+    if(S.files.find(x=>x.name===f.name&&x.size===f.size))continue;
+    S.files.push(f);S.results[f.name]=null;
+  }
+  render();
+}
+function removeFile(n){S.files=S.files.filter(f=>f.name!==n);delete S.results[n];render()}
+
+function render(){
+  if(!S.files.length){fl.classList.remove("a");bda.style.display="none";return}
+  fl.classList.add("a");fc.textContent=S.files.length;
+  const done=S.files.filter(f=>S.results[f.name]?.success).length;
+  bpa.disabled=done===S.files.length;
+  bda.style.display=done>0?"inline-flex":"none";
+  fis.innerHTML=S.files.map(f=>{
+    const r=S.results[f.name];let sc="w",stx="等待",db="";
+    if(r){
+      if(r.alreadyTagged){sc="a";stx="已有标签";db=`<button class="bdl" onclick="dl('${f.name}')">下载</button>`}
+      else if(r.success){sc="s";stx="已标记";db=`<button class="bdl" onclick="dl('${f.name}')">下载</button>`}
+      else{sc="e";stx="失败"}
+    }
+    const th=`<img class="ft" src="${URL.createObjectURL(f)}">`;
+    const dim=r&&r.dimensions?r.dimensions+" · JPEG":"";
+    const vfy=r&&r.success&&!r.alreadyTagged?' <span class="badge">✓ 已标记</span>':'';
+    const atg=r&&r.alreadyTagged?' <span class="badge2">✓ 已有标签</span>':'';
+    return `<div class="fi">${th}<div class="fif"><div class="fn" title="${f.name}">${f.name}</div><div class="fm">${fs(f.size)} · ${dim||"图片"}${vfy}${atg}${r&&r.elapsed?' · '+r.elapsed+'ms':''}</div></div><span class="fs ${sc}">${stx}</span><div class="fa">${db}<button onclick="removeFile('${f.name}')">✕</button></div></div>`;
+  }).join("");
+}
+
+uz.addEventListener("click",()=>fi.click());
+fi.addEventListener("change",()=>{if(fi.files.length)addFiles(Array.from(fi.files));fi.value=""});
+uz.addEventListener("dragover",e=>{e.preventDefault();uz.classList.add("dr")});
+uz.addEventListener("dragleave",()=>uz.classList.remove("dr"));
+uz.addEventListener("drop",e=>{e.preventDefault();uz.classList.remove("dr");if(e.dataTransfer.files.length)addFiles(Array.from(e.dataTransfer.files))});
+document.addEventListener("paste",e=>{const fs=Array.from(e.clipboardData?.items||[]).filter(i=>i.kind==="file").map(i=>i.getAsFile()).filter(Boolean);if(fs.length){e.preventDefault();addFiles(fs)}});
+
+async function procAll(){
+  const up=S.files.filter(f=>{const r=S.results[f.name];return!r||(!r.success&&!r.alreadyTagged)});
+  if(!up.length){toast("全部已处理","in");return}
+  pbb.style.display="block";bpa.disabled=true;toast(`处理 ${up.length} 个文件...`,"in");
+  let d=0;
+  for(const f of up){
+    S.results[f.name]={success:false,processing:true};render();
+    try{const r=await processImage(f);S.results[f.name]=r}
+    catch(e){S.results[f.name]={success:false,message:e.message}}
+    d++;pff.style.width=(d/up.length*100)+"%";render();
+  }
+  const ok=S.files.filter(f=>S.results[f.name]?.success&&!S.results[f.name]?.alreadyTagged).length;
+  const ag=S.files.filter(f=>S.results[f.name]?.alreadyTagged).length;
+  toast(ok+ag===S.files.length?`完成：${ok} 标记，${ag} 已有标签`:`${ok} 成功，${S.files.length-ok-ag} 失败`,ok+ag===S.files.length?"ok":"er");
+  pbb.style.display="none";pff.style.width="0%";bpa.disabled=false;
+}
+
+function dl(name){
+  const r=S.results[name];if(!r||!r.blob)return;
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(r.blob);
+  a.download=r.downloadName||name.replace(/\.[^.]+$/,'')+'.jpg';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(a.href)},100);
+}
+
+async function dlAll(){
+  const pd=S.files.filter(f=>{const r=S.results[f.name];return r&&(r.success||r.alreadyTagged)});
+  if(!pd.length){toast("没有可下载的文件","er");return}
+  // 逐个下载（浏览器限制不能批量自动下载）
+  toast(`正在下载 ${pd.length} 个文件...`,"in");
+  for(let i=0;i<pd.length;i++){
+    dl(pd[i].name);
+    await new Promise(r=>setTimeout(r,500));
+  }
+  toast(`已触发 ${pd.length} 个文件下载`,"ok");
+}
+
+bpa.addEventListener("click",procAll);
+bda.addEventListener("click",dlAll);
+bcl.addEventListener("click",()=>{S.files=[];S.results={};render();toast("已清空","in")});
+</script>
+</body>
+</html>

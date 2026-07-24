@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 图片溯源检测</title>
+<style>
+:root{--bg:#f5f5f5;--card:#fff;--text:#333;--t2:#666;--bd:#e0e0e0;--r:12px;--sh:0 2px 12px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.h{background:#232F3E;color:#fff;padding:14px 0;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.hi{max-width:960px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:12px}
+.hl{font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}
+.hb{background:#FF9900;color:#111;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-left:auto}
+.c{max-width:960px;margin:0 auto;padding:28px 24px}
+.uz{background:var(--card);border:2px dashed var(--bd);border-radius:var(--r);padding:40px 24px;text-align:center;cursor:pointer;transition:all .3s;margin-bottom:24px}
+.uz:hover,.uz.dr{border-color:#FF9900;background:#fff3e0}
+.uz .ico{font-size:48px;margin-bottom:10px;display:block}
+.uz h3{font-size:17px;margin-bottom:4px}
+.uz p{color:var(--t2);font-size:13px}
+.uz input{display:none}
+.fl{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;display:none}
+.fl.a{display:block}
+.flh{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--bd)}
+.flh h4{font-size:14px}
+.ba{display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.bp{background:#FF9900;color:#111}.bp:hover{background:#e68a00}.bp:disabled{background:#ccc;cursor:not-allowed}
+.bg{background:none;border:1px solid var(--bd);color:var(--text)}.bg:hover{background:#f5f5f5}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px 20px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start}
+.card:hover{background:#fafafa}
+.thumb{width:64px;height:64px;border-radius:8px;object-fit:cover;background:#f0f0f0;flex-shrink:0}
+.info{flex:1;min-width:0}
+.info .name{font-size:14px;font-weight:600;margin-bottom:4px}
+.info .meta{font-size:12px;color:var(--t2)}
+.badge{display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;margin-left:8px}
+.badge.c{background:#ffebee;color:#c62828}
+.badge.l{background:#fff3e0;color:#e65100}
+.badge.p{background:#e3f2fd;color:#1565c0}
+.badge.n{background:#e8f5e9;color:#2e7d32}
+.badge.e{background:#f5f5f5;color:#999}
+.evidence{font-size:12px;color:var(--t2);margin-top:6px;line-height:1.6}
+.evidence span{display:block;padding:2px 0}
+.summary{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px 24px;margin-top:20px}
+.summary h4{font-size:15px;margin-bottom:12px}
+.summary .row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid #f0f0f0}
+.summary .row:last-child{border:none}.summary .num{font-weight:700}
+.pb{height:4px;background:#e0e0e0;border-radius:2px;margin-top:10px;overflow:hidden;display:none}
+.pf{height:100%;background:#FF9900;border-radius:2px;transition:width .3s;width:0%}
+.to{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:1000;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.to.s{opacity:1}.to.ok{background:#e8f5e9;color:#2e7d32}.to.er{background:#ffebee;color:#c62828}.to.in{background:#e3f2fd;color:#1565c0}
+.ftr{text-align:center;padding:20px;color:var(--t2);font-size:11px;margin-top:10px}
+.tools-tag{font-size:11px;color:var(--t2);margin-top:6px;display:flex;flex-wrap:wrap;gap:4px}
+.tools-tag span{background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:10px}
+</style>
+</head>
+<body>
+<div class="h"><div class="hi">
+  <div class="hl">🔍 AI 图片溯源检测</div>
+  <span class="hb">支持 C2PA · EXIF · XMP · PNG</span>
+</div></div>
+
+<div class="c">
+  <div class="uz" id="uz">
+    <span class="ico">🔬</span>
+    <h3>拖拽图片到此处，或点击选择</h3>
+    <p>上传图片 → 多维度扫描元数据 → 识别 AI 生成痕迹</p>
+    <input type="file" id="fi" multiple accept="image/*">
+  </div>
+
+  <div class="fl" id="fl">
+    <div class="flh">
+      <h4>📊 检测结果（<span id="fc">0</span>）</h4>
+      <div class="ba">
+        <button class="btn bp" id="bpa" disabled>🔍 全部检测</button>
+        <button class="btn bg" id="bcl">🗑️ 清空</button>
+      </div>
+    </div>
+    <div id="fis"></div>
+    <div class="pb" id="pbb"><div class="pf" id="pff"></div></div>
+    <div class="summary" id="summary" style="display:none"></div>
+  </div>
+</div>
+
+<div class="ftr">纯浏览器端检测 · 图片不上传 · 覆盖 DALL-E / Gemini / Midjourney / Stable Diffusion / Firefly / Flux 等主流工具</div>
+<div class="to" id="to"></div>
+
+<script>
+// ── AI 特征库（扩展版）──
+const AI_TOOLS_L1 = [ // 高权重：确认为 AI 生图工具
+  "stable diffusion", "automatic1111", "comfyui", "invokeai",
+  "dall-e", "dalle", "openai", "chatgpt",
+  "midjourney", "adobe firefly", "firefly",
+  "novelai", "leonardo", "playground",
+  "bing image creator", "microsoft designer",
+  "ideogram", "flux", "recraft",
+  "google imagen", "imagen", "gemini",
+  "kandinsky", "dreamstudio", "runwayml",
+];
+
+const AI_TOOLS_L2 = [ // 中权重：可能是 AI 相关但不一定是图像生成
+  "copilot", "adobe generative", "sora",
+];
+
+const AI_PARAMS = [
+  "steps:", "sampler:", "cfg scale:", "cfgscale:",
+  "seed:", "model hash:", "model:", "sd_model",
+  "denoising", "clip skip", "negative prompt:", "prompt:",
+  "lora:", "controlnet:", "batch size:", "batch pos:",
+  "ensd:", "eta:", "size:", "vae:", "upscaler:",
+  "scheduler:", "sde", "euler", "ddim", "dpm",
+];
+
+const AI_DESC = [
+  "ai-generated", "generated by ai", "ai generated",
+  "created with ai", "synthetic", "generative ai",
+  "made with ai", "ai created", "ai assisted",
+  "contains-synthetic", "made with dall",
+];
+
+// C2PA / IPTC 关键字段值
+const C2PA_MARKERS = ["trainedalgorithmicmedia", "algorithmicmedia", "compositedwithtrainedalgorithmicmedia", "compositewithtrainedalgorithmicmedia"];
+const C2PA_TOOLS = ["openai", "google", "adobe", "microsoft", "midjourney"];
+
+// ── EXIF 解析 ──
+function readEXIF(jpegBytes) {
+  const data = {};
+  if (jpegBytes[0]!==0xFF||jpegBytes[1]!==0xD8) return data;
+  let pos = 2;
+  while (pos < jpegBytes.length - 1) {
+    if (jpegBytes[pos]!==0xFF){pos++;continue}
+    const m = jpegBytes[pos+1];
+    if (m===0x00||m===0xFF){pos++;continue}
+    if (m===0xDA||m===0xD9) break;
+    if (m>=0xD0&&m<=0xD7){pos+=2;continue}
+    const len = (jpegBytes[pos+2]<<8)|jpegBytes[pos+3];
+    if (pos+2+len > jpegBytes.length) break;
+    if (m===0xE1 && pos+10 < jpegBytes.length) {
+      const hdr = new TextDecoder().decode(jpegBytes.slice(pos+4,pos+10));
+      if (hdr==="Exif\0\0") {
+        parseTIFF(jpegBytes.slice(pos+10,pos+2+len), data);
+      }
+    }
+    pos += 2+len;
+  }
+  return data;
+}
+
+function parseTIFF(bytes, data, isLittle=true) {
+  if (bytes.length < 8) return;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const le = view.getUint16(0)===0x4949;
+  if (view.getUint16(0,le)!==0x002A) return;
+  let ifdOff = view.getUint32(4,le);
+  while (ifdOff > 0 && ifdOff < bytes.length - 6) {
+    const entries = view.getUint16(ifdOff,le);
+    let nextIFD = 0, subIFD = 0, gpsIFD = 0;
+    for (let i=0;i<entries;i++) {
+      const off = ifdOff+2+i*12;
+      if (off+12 > bytes.length) break;
+      const tag = view.getUint16(off,le);
+      const type = view.getUint16(off+2,le);
+      const count = view.getUint32(off+4,le);
+      const valOff = off+8;
+      const sizes = {1:1,2:1,3:2,4:4,5:8,6:1,7:1,8:2,9:4,10:8,11:4,12:8};
+      const size = (sizes[type]||1)*count;
+      let value = "";
+      if (size<=4) value = readTIFFValue(view,valOff,type,count,le,4);
+      else {
+        const dOff = view.getUint32(valOff,le);
+        if (dOff+size <= bytes.length) value = readTIFFValue(view,dOff,type,count,le,size);
+      }
+      // 标签映射
+      const tags = {
+        0x010F:"Make",0x0110:"Model",0x0131:"Software",0x013B:"Artist",
+        0x010E:"Description",0x9286:"UserComment",0x9003:"DateTimeOriginal",
+        0x9004:"CreateDate",0x0132:"ModifyDate",0x8298:"Copyright",
+        0xA002:"ImageWidth",0xA003:"ImageHeight",
+        0x8769:0,0x8825:0,
+      };
+      if (tag===0x8769) subIFD = parseInt(value)||0;
+      if (tag===0x8825) gpsIFD = parseInt(value)||0;
+      const name = tags[tag] || (typeof tags[tag]==="number"?"":"Tag0x"+tag.toString(16));
+      if (value && typeof name === "string") data["EXIF:"+name] = value;
+    }
+    ifdOff = subIFD || gpsIFD || view.getUint32(ifdOff+2+entries*12,le) || 0;
+  }
+}
+
+function readTIFFValue(view,off,type,count,le,size) {
+  if (type===2) {
+    let s=""; for(let i=off;i<off+Math.min(count,1000);i++){const c=view.getUint8(i);if(c===0)break;s+=String.fromCharCode(c);} return s;
+  }
+  if (type===7) { let s=""; for(let i=0;i<Math.min(count,500);i++) s+=String.fromCharCode(view.getUint8(off+i)); return s; }
+  if (type===3) return String(view.getUint16(off,le));
+  if (type===4||type===9) return String(view.getUint32(off,le));
+  return String(view.getUint32(off,le));
+}
+
+// ── XMP 解析 ──
+function readXMP(jpegBytes) {
+  const data = {};
+  const header = new TextEncoder().encode("http://ns.adobe.com/xap/1.0/\0");
+  let pos = 2;
+  while (pos < jpegBytes.length - 1) {
+    if (jpegBytes[pos]!==0xFF){pos++;continue}
+    const m = jpegBytes[pos+1];
+    if (m===0x00||m===0xFF){pos++;continue}
+    if (m===0xDA||m===0xD9) break;
+    if (m>=0xD0&&m<=0xD7){pos+=2;continue}
+    const len = (jpegBytes[pos+2]<<8)|jpegBytes[pos+3];
+    if (m===0xE1 && pos+4+header.length <= jpegBytes.length) {
+      const hdr = new TextDecoder().decode(jpegBytes.slice(pos+4,pos+4+header.length));
+      if (hdr==="http://ns.adobe.com/xap/1.0/\0") {
+        const xmpStr = new TextDecoder().decode(jpegBytes.slice(pos+4+header.length,pos+2+len));
+        extractXMPTags(xmpStr, data);
+      }
+    }
+    pos += 2+len;
+  }
+  return data;
+}
+
+function extractXMPTags(xml, data) {
+  // dc:creator, dc:description, dc:subject
+  for (const [tag,key] of [["dc:creator","XMP:Creator"],["dc:description","XMP:Description"],["dc:subject","XMP:Subject"],["xmp:CreatorTool","XMP:CreatorTool"],["xmp:MetadataDate","XMP:MetadataDate"]]) {
+    const m = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`,"i"));
+    if (m) {
+      let v = m[1].replace(/<[^>]+>/g,"").trim();
+      if (v) data[key] = v;
+    }
+  }
+  // 检查 DigitalSourceType (IPTC)
+  const dst = xml.match(/DigitalSourceType[^>]*>([^<]+)</i);
+  if (dst) data["XMP:DigitalSourceType"] = dst[1].trim();
+  // 检查 AISystemUsed
+  const aiSys = xml.match(/AISystemUsed[^>]*>([^<]+)</i);
+  if (aiSys) data["XMP:AISystemUsed"] = aiSys[1].trim();
+  // 检查 AIPromptInformation
+  const prompt = xml.match(/AIPromptInformation[^>]*>([^<]+)</i);
+  if (prompt) data["XMP:AIPromptInformation"] = prompt[1].trim().substring(0,200);
+}
+
+// ── C2PA / JUMBF 解析 (APP11) ──
+function readC2PA(jpegBytes) {
+  const data = {};
+  let pos = 2;
+  while (pos < jpegBytes.length - 1) {
+    if (jpegBytes[pos]!==0xFF){pos++;continue}
+    const m = jpegBytes[pos+1];
+    if (m===0x00||m===0xFF){pos++;continue}
+    if (m===0xDA||m===0xD9) break;
+    if (m>=0xD0&&m<=0xD7){pos+=2;continue}
+    const len = (jpegBytes[pos+2]<<8)|jpegBytes[pos+3];
+    // APP11 (0xEB) 是 C2PA/JUMBF 容器
+    if (m===0xEB && pos+4 < jpegBytes.length) {
+      const chunk = jpegBytes.slice(pos+4, pos+2+len);
+      const chunkStr = new TextDecoder().decode(chunk.slice(0, Math.min(chunk.length, 5000)));
+      // 查找 C2PA manifest 关键字段
+      const low = chunkStr.toLowerCase();
+      for (const mk of C2PA_MARKERS) {
+        if (low.includes(mk)) {
+          data["C2PA:DigitalSourceType"] = mk;
+          break;
+        }
+      }
+      for (const tool of C2PA_TOOLS) {
+        if (low.includes(tool)) {
+          data["C2PA:Signer"] = tool;
+          break;
+        }
+      }
+      if (low.includes("c2pa")||low.includes("content credential")||low.includes("jumd")) {
+        data["C2PA:Present"] = "true";
+      }
+    }
+    pos += 2+len;
+  }
+  return data;
+}
+
+// ── PNG C2PA 块解析 ──
+function readPNGC2PA(bytes) {
+  const data = {};
+  if (bytes[0]!==137||bytes[1]!==80||bytes[2]!==78||bytes[3]!==71) return data;
+  let pos = 8;
+  while (pos < bytes.length - 12) {
+    const len = (bytes[pos]<<24)|(bytes[pos+1]<<16)|(bytes[pos+2]<<8)|bytes[pos+3];
+    const type = String.fromCharCode(bytes[pos+4],bytes[pos+5],bytes[pos+6],bytes[pos+7]);
+    // C2PA PNG chunks: caBX (box), caMs (manifest store)
+    if (type==="caBX"||type==="caMs"||type==="caSt") {
+      data["PNG:C2PA"] = "true";
+      const chunk = bytes.slice(pos+8, pos+8+len);
+      const chunkStr = new TextDecoder().decode(chunk.slice(0, Math.min(chunk.length, 5000)));
+      const low = chunkStr.toLowerCase();
+      for (const mk of C2PA_MARKERS) {
+        if (low.includes(mk)) { data["PNG:DigitalSourceType"] = mk; break; }
+      }
+      for (const tool of C2PA_TOOLS) {
+        if (low.includes(tool)) { data["PNG:C2PA_Signer"] = tool; break; }
+      }
+    }
+    pos += 12+len;
+  }
+  return data;
+}
+
+// ── PNG 文本块解析 ──
+function readPNGText(bytes) {
+  const data = {};
+  if (bytes[0]!==137||bytes[1]!==80||bytes[2]!==78||bytes[3]!==71) return data;
+  let pos = 8;
+  while (pos < bytes.length - 12) {
+    const len = (bytes[pos]<<24)|(bytes[pos+1]<<16)|(bytes[pos+2]<<8)|bytes[pos+3];
+    const type = String.fromCharCode(bytes[pos+4],bytes[pos+5],bytes[pos+6],bytes[pos+7]);
+    if (type==="tEXt"||type==="iTXt"||type==="zTXt") {
+      const content = bytes.slice(pos+8,pos+8+len);
+      let nul = content.indexOf(0); if (nul<0) nul = content.length;
+      const key = new TextDecoder().decode(content.slice(0,nul));
+      const val = new TextDecoder().decode(content.slice(nul+1,Math.min(content.length, 3000)));
+      data["PNG:"+key] = val;
+    }
+    pos += 12+len;
+  }
+  return data;
+}
+
+// ── 检测主逻辑 ──
+function detectAI(metadata) {
+  const result = { likelihood:"none", score:0, evidences:[], detectedTools:[] };
+
+  // 辅助：检查字段值中是否包含关键词
+  function checkField(field, keywords, weight, likelihood) {
+    const val = (metadata[field]||"").toLowerCase();
+    if (!val) return;
+    const matched = keywords.filter(k=>val.includes(k));
+    if (matched.length) {
+      result.score += weight;
+      if (result.likelihood==="none"||(result.likelihood==="possible"&&likelihood!=="possible")) {
+        result.likelihood = likelihood;
+      }
+      result.detectedTools.push(...matched.filter(t=>!result.detectedTools.includes(t)));
+      result.evidences.push(`[${field}] ${matched.join(", ")}`);
+      return true;
+    }
+    return false;
+  }
+
+  // 1. C2PA 检测（最高优先级 — DALL-E/Gemini/Firefly 都靠这个）
+  if (metadata["C2PA:Present"]||metadata["PNG:C2PA"]) {
+    const dst = metadata["C2PA:DigitalSourceType"]||metadata["PNG:DigitalSourceType"]||"";
+    const signer = metadata["C2PA:Signer"]||metadata["PNG:C2PA_Signer"]||"";
+    result.score += 15;
+    result.likelihood = "confirmed";
+    result.evidences.push(`[C2PA] 内容凭证 (Content Credentials) `+(dst?`— ${dst}`:"— 已验证签名")); 
+    if (signer) {
+      result.detectedTools.push(signer);
+      result.evidences.push(`[C2PA] 签发者: ${signer}${signer==="openai"?" (DALL-E/ChatGPT)":signer==="google"?" (Gemini/Imagen)":signer==="adobe"?" (Firefly/Photoshop)":""}`);
+    }
+  }
+
+  // 2. DigitalSourceType 检测
+  checkField("XMP:DigitalSourceType", C2PA_MARKERS, 12, "confirmed");
+
+  // 3. AISystemUsed
+  checkField("XMP:AISystemUsed", AI_TOOLS_L1, 12, "confirmed");
+
+  // 4. EXIF Software 字段
+  checkField("EXIF:Software", AI_TOOLS_L1, 10, "confirmed");
+  checkField("Software", AI_TOOLS_L1, 10, "confirmed");
+  checkField("XMP:CreatorTool", AI_TOOLS_L1, 10, "confirmed");
+
+  // 5. AI 生成参数
+  const paramFields = ["EXIF:UserComment","PNG:parameters","PNG:Parameters","Comment"];
+  for (const f of paramFields) {
+    const val = (metadata[f]||"").toLowerCase();
+    if (!val) continue;
+    const matched = AI_PARAMS.filter(p=>val.includes(p));
+    if (matched.length >= 3) {
+      result.score += 10;
+      if (result.likelihood!=="confirmed") result.likelihood = "confirmed";
+      result.evidences.push(`[${f}] ${matched.length} 个生成参数 (${matched.slice(0,4).join(", ")}...)`);
+      break;
+    } else if (matched.length >= 1) {
+      result.score += 6;
+      if (result.likelihood==="none") result.likelihood = "likely";
+      result.evidences.push(`[${f}] ${matched.length} 个生成参数`);
+      break;
+    }
+  }
+
+  // 6. 描述字段中的工具名
+  if (result.likelihood==="none"||result.likelihood==="possible") {
+    for (const f of ["Description","EXIF:Description","XMP:Description"]) {
+      const val = (metadata[f]||"").toLowerCase();
+      if (!val) continue;
+      const matched = AI_TOOLS_L1.filter(t=>val.includes(t));
+      if (matched.length) {
+        result.score += 7;
+        result.likelihood = "likely";
+        result.detectedTools.push(...matched.filter(t=>!result.detectedTools.includes(t)));
+        result.evidences.push(`[${f}] 工具名: ${matched.join(", ")}`);
+        break;
+      }
+      // 也检查 L2 工具
+      const matched2 = AI_TOOLS_L2.filter(t=>val.includes(t));
+      if (matched2.length) {
+        result.score += 5;
+        if (result.likelihood==="none") result.likelihood = "likely";
+        result.evidences.push(`[${f}] 相关工具: ${matched2.join(", ")}`);
+        break;
+      }
+    }
+  }
+
+  // 7. AI 描述关键词（弱信号）
+  if (result.likelihood==="none") {
+    for (const [k,v] of Object.entries(metadata)) {
+      if (typeof v !== "string"||k.startsWith("C2PA")||k.startsWith("PNG:C2PA")) continue;
+      const lv = v.toLowerCase();
+      const matched = AI_DESC.filter(d=>lv.includes(d));
+      if (matched.length) {
+        result.score += 4;
+        result.likelihood = "possible";
+        result.evidences.push(`[${k}] ${matched[0]}`);
+        break;
+      }
+      // 也检查 L1 工具名（在任意字段中出现）
+      const toolMatch = AI_TOOLS_L1.filter(t=>lv.includes(t));
+      if (toolMatch.length) {
+        result.score += 5;
+        if (result.likelihood==="none") result.likelihood = "possible";
+        result.evidences.push(`[${k}] 含工具名: ${toolMatch.join(", ")}`);
+        break;
+      }
+    }
+  }
+
+  if (!result.evidences.length) {
+    result.evidences.push("未发现元数据 AI 痕迹（元数据可能已被清除）");
+  }
+
+  return result;
+}
+
+// ── 主处理 ──
+async function processFile(file) {
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  let metadata = { FileName: file.name, FileSize: String(file.size) };
+
+  const dims = await getDimensions(file);
+  if (dims) { metadata.ImageWidth = String(dims.w); metadata.ImageHeight = String(dims.h); }
+
+  if (ext==="jpg"||ext==="jpeg") {
+    Object.assign(metadata, readEXIF(bytes));
+    Object.assign(metadata, readXMP(bytes));
+    Object.assign(metadata, readC2PA(bytes));
+  } else if (ext==="png") {
+    Object.assign(metadata, readPNGText(bytes));
+    Object.assign(metadata, readPNGC2PA(bytes));
+  }
+
+  const result = detectAI(metadata);
+
+  return {
+    success:true, likelihood:result.likelihood, score:result.score,
+    evidences:result.evidences, detectedTools:result.detectedTools,
+    metadata:metadata, dimensions:dims?`${dims.w}x${dims.h}`:"",
+    name:file.name, size:file.size,
+  };
+}
+
+function getDimensions(file) {
+  return new Promise((resolve) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => { URL.revokeObjectURL(url); resolve({w:img.naturalWidth,h:img.naturalHeight}); };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+// ── UI ──
+const S={files:[],results:{}};
+const uz=document.getElementById("uz"),fi=document.getElementById("fi");
+const fl=document.getElementById("fl"),fis=document.getElementById("fis");
+const fc=document.getElementById("fc"),bpa=document.getElementById("bpa");
+const bcl=document.getElementById("bcl"),pbb=document.getElementById("pbb");
+const pff=document.getElementById("pff"),summary=document.getElementById("summary");
+const to=document.getElementById("to");
+let tt;
+
+function toast(m,t="in"){to.textContent=m;to.className=`to ${t} s`;clearTimeout(tt);tt=setTimeout(()=>to.className="to",3000)}
+function fs(b){return b<1024?b+" B":b<1048576?(b/1024).toFixed(1)+" KB":(b/1048576).toFixed(1)+" MB"}
+
+function addFiles(arr){
+  for(const f of arr){
+    if(S.files.find(x=>x.name===f.name&&x.size===f.size))continue;
+    S.files.push(f);S.results[f.name]=null;
+  }
+  render();
+}
+function removeFile(n){S.files=S.files.filter(f=>f.name!==n);delete S.results[n];render()}
+
+function render(){
+  if(!S.files.length){fl.classList.remove("a");summary.style.display="none";return}
+  fl.classList.add("a");fc.textContent=S.files.length;
+  const done=S.files.filter(f=>S.results[f.name]!==null).length;
+  bpa.disabled=done===S.files.length;
+
+  let conf=0,like=0,poss=0,none=0,err=0;
+  S.files.forEach(f=>{
+    const r=S.results[f.name];if(!r)return;
+    if(r.likelihood==="confirmed")conf++;
+    else if(r.likelihood==="likely")like++;
+    else if(r.likelihood==="possible")poss++;
+    else if(r.likelihood==="none")none++;
+    else err++;
+  });
+
+  fis.innerHTML=S.files.map(f=>{
+    const r=S.results[f.name];
+    if(!r) return `<div class="card"><div class="thumb" style="background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:24px">⏳</div><div class="info"><div class="name">${f.name}</div><div class="meta">${fs(f.size)} · 等待检测</div></div></div>`;
+    const lb={confirmed:"c",likely:"l",possible:"p",none:"n",error:"e"};
+    const lt={confirmed:"⚠ AI 生成",likely:"🔶 高度疑似",possible:"🔹 可能含 AI",none:"✅ 未检出",error:"❌ 失败"};
+    const cls=lb[r.likelihood]||"e";
+    const txt=lt[r.likelihood]||"错误";
+    const dims=r.dimensions?`${r.dimensions} · `:"";
+    const evids = r.evidences.map(e=>`<span>${e}</span>`).join("");
+    const tools = r.detectedTools&&r.detectedTools.length ? `<div class="tools-tag">${r.detectedTools.map(t=>`<span>${t}</span>`).join("")}</div>`:"";
+    return `<div class="card">
+      <img class="thumb" src="${URL.createObjectURL(f)}">
+      <div class="info">
+        <div class="name">${f.name}<span class="badge ${cls}">${txt}</span></div>
+        <div class="meta">${fs(r.size)} · ${dims}检测评分: ${r.score}</div>
+        <div class="evidence">${evids}</div>${tools}
+      </div></div>`;
+  }).join("");
+
+  if (done>0) {
+    summary.style.display="block";
+    summary.innerHTML=`<h4>📊 检测汇总（${done} 个文件）</h4>
+      <div class="row"><span>⚠️ 确认 AI（含 C2PA/DigitalSourceType）</span><span class="num" style="color:#c62828">${conf} 个</span></div>
+      <div class="row"><span>🔶 高度疑似（描述中含工具名）</span><span class="num" style="color:#e65100">${like} 个</span></div>
+      <div class="row"><span>🔹 可能含 AI（AI 关键词）</span><span class="num" style="color:#1565c0">${poss} 个</span></div>
+      <div class="row"><span>✅ 未检出</span><span class="num" style="color:#2e7d32">${none} 个</span></div>
+      <div class="row"><span>❌ 检测失败</span><span class="num" style="color:#999">${err} 个</span></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--t2)">💡 C2PA 覆盖 DALL-E/ChatGPT · Gemini/Imagen · Adobe Firefly。未检出≠非 AI，元数据清除后无法检测。</div>`;
+  }
+}
+
+uz.addEventListener("click",()=>fi.click());
+fi.addEventListener("change",()=>{if(fi.files.length)addFiles(Array.from(fi.files));fi.value=""});
+uz.addEventListener("dragover",e=>{e.preventDefault();uz.classList.add("dr")});
+uz.addEventListener("dragleave",()=>uz.classList.remove("dr"));
+uz.addEventListener("drop",e=>{e.preventDefault();uz.classList.remove("dr");if(e.dataTransfer.files.length)addFiles(Array.from(e.dataTransfer.files))});
+document.addEventListener("paste",e=>{const fs=Array.from(e.clipboardData?.items||[]).filter(i=>i.kind==="file").map(i=>i.getAsFile()).filter(Boolean);if(fs.length){e.preventDefault();addFiles(fs)}});
+
+async function procAll(){
+  const up=S.files.filter(f=>S.results[f.name]===null);
+  if(!up.length){toast("全部已检测","in");return}
+  pbb.style.display="block";bpa.disabled=true;toast(`正在检测 ${up.length} 个文件...`,"in");
+  let d=0;
+  for(const f of up){
+    try{const r=await processFile(f);S.results[f.name]=r}
+    catch(e){S.results[f.name]={likelihood:"error",score:0,evidences:[e.message],size:f.size,name:f.name}}
+    d++;pff.style.width=(d/up.length*100)+"%";render();
+  }
+  pbb.style.display="none";pff.style.width="0%";bpa.disabled=false;
+  const conf=S.files.filter(f=>S.results[f.name]?.likelihood==="confirmed").length;
+  const like=S.files.filter(f=>S.results[f.name]?.likelihood==="likely").length;
+  if(conf+like>0)toast(`检出 ${conf} 个确认 + ${like} 个疑似 AI 图片`,"ok");
+  else toast("未检出 AI 痕迹","in");
+}
+
+bpa.addEventListener("click",procAll);
+bcl.addEventListener("click",()=>{S.files=[];S.results={};render();summary.style.display="none";toast("已清空","in")});
+</script>
+</body>
+</html>
